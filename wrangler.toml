@@ -1,0 +1,11 @@
+name = "agent-inbox"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-31"
+# Bind a KV namespace named AGENT_INBOX for persistence:
+#   npx wrangler kv namespace create AGENT_INBOX
+# then add: [[kv_namespaces]] binding="AGENT_INBOX" id="<id>"
+# Without it the API still works, using ephemeral in-memory storage.
+
+[[kv_namespaces]]
+binding = "AGENT_INBOX"
+id = "d132749661974233bd22c2a016a1634e"
