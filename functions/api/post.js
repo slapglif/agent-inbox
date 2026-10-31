@@ -32,11 +32,12 @@ async function archiveRecord(env, kind, record){
   // Append-only, hash-chained immutable archive. Nothing in the app ever writes or deletes archive: keys except appending here.
   const entry0 = {kind, record, ts: Date.now()};
   if(env.AGENT_INBOX){
-    const l = await env.AGENT_INBOX.list({prefix:"archive:", limit:1000});
-    let prev = "GENESIS";
-    if(l.keys.length){ const last = await env.AGENT_INBOX.get(l.keys[l.keys.length-1].name,{type:"json"}); if(last && last.hash) prev = last.hash; }
+    const head = await env.AGENT_INBOX.get("archive:head",{type:"json"});
+    const prev = head && head.hash ? head.hash : "GENESIS";
     const entry = {...entry0, prev, hash: await sha256hex(prev + JSON.stringify(entry0))};
-    await env.AGENT_INBOX.put("archive:"+String(entry.ts).padStart(15,"0")+":"+crypto.randomUUID(), JSON.stringify(entry));
+    const key = "archive:"+String(entry.ts).padStart(15,"0")+":"+crypto.randomUUID();
+    await env.AGENT_INBOX.put(key, JSON.stringify(entry));
+    await env.AGENT_INBOX.put("archive:head", JSON.stringify({hash: entry.hash, key}));
     return entry;
   }
   const entry = {...entry0, prev:"GENESIS", hash: await sha256hex("GENESIS"+JSON.stringify(entry0))};
